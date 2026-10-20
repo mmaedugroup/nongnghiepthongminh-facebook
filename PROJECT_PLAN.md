@@ -145,6 +145,10 @@ Chi tiết: `pipeline/ARCHITECTURE.md`.
 - [x] Bổ sung `docs/CONTENT_POLICY.md` về claims, an toàn, bản quyền và human approval
 - [x] Bổ sung hai tài liệu mẫu bị checklist tham chiếu nhưng thiếu trong repo
 - [x] Yêu cầu Gemini trả JSON có claims/uncertainties/safety note và validate trước khi tạo draft
+- [x] Tham khảo farmOS, FarmBot, n8n, Postiz và hệ sinh thái Open Agriculture; ghi bài học vào `docs/REFERENCES-AND-BENCHMARKS.md`
+- [x] Thêm state schema độc lập cho source/draft/publishing/audit → `pipeline/state-schema.sql`
+- [x] Thêm contract staging của Postiz theo Public API → `pipeline/POSTIZ_API_CONTRACT.md`
+- [x] Thêm workflow Error Trigger mẫu → `pipeline/n8n-error-handler-workflow.json`
 - [ ] Thêm dedup/time-window, retry/dead-letter và audit log vào workflow thực tế
 
 ### 7.4 Cấu hình Postiz + kết nối Fanpage
@@ -239,6 +243,9 @@ Giọng văn mẫu đã duyệt: `docs/ban-nhap-mau/bai-1-va-bai-3.md` (sau khi 
 │   ├── ARCHITECTURE.md                    # Kiến trúc pipeline chi tiết
 │   ├── docker-compose.yml                 # n8n + Postgres + Redis + Postiz
 │   ├── n8n-workflow-content-pipeline.json # Workflow mẫu (credentials = placeholder)
+│   ├── n8n-error-handler-workflow.json    # Error Trigger mẫu
+│   ├── state-schema.sql                    # State store + audit log độc lập
+│   ├── POSTIZ_API_CONTRACT.md              # Contract Postiz staging
 │   └── rss-sources.md                     # Nguồn nội dung quốc tế
 ├── demo-video-ai/                         # Demo app tạo video AI trong trình duyệt
 ├── .env.example                            # Mẫu cấu hình local, không chứa secret thật

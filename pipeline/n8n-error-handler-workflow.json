@@ -1,0 +1,55 @@
+{
+  "name": "NNTT - Error Handler",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "error-trigger-001",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const execution = $json.execution ?? {};\nconst workflow = $json.workflow ?? {};\nreturn [{ json: {\n  event_type: 'workflow_failed',\n  workflow_name: workflow.name ?? 'unknown',\n  execution_id: execution.id ?? null,\n  last_node: execution.lastNodeExecuted ?? null,\n  error_message: execution.error?.message ?? $json.trigger?.error?.message ?? 'unknown error',\n  occurred_at: new Date().toISOString()\n} }];"
+      },
+      "id": "normalize-error-001",
+      "name": "Chuan hoa loi",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "=🚨 Pipeline NNTT thất bại\n\nWorkflow: {{$json.workflow_name}}\nNode cuối: {{$json.last_node}}\nExecution: {{$json.execution_id}}\nLỗi: {{$json.error_message}}\n\nKiểm tra n8n Executions trước khi chạy lại.",
+        "additionalFields": {}
+      },
+      "id": "telegram-error-001",
+      "name": "Bao Telegram loi",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [760, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "CREDENTIAL_ID_TELEGRAM",
+          "name": "Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [[{"index": 0, "node": "Chuan hoa loi", "type": "main"}]]
+    },
+    "Chuan hoa loi": {
+      "main": [[{"index": 0, "node": "Bao Telegram loi", "type": "main"}]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "saveExecutionProgress": true,
+    "timezone": "Asia/Ho_Chi_Minh"
+  },
+  "pinData": {}
+}

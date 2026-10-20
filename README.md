@@ -58,6 +58,11 @@ kiểm thử backup/restore và không mở trực tiếp cổng quản trị ra
 Chính sách claims, an toàn nông nghiệp, bản quyền và quy trình duyệt nằm trong
 [`docs/CONTENT_POLICY.md`](docs/CONTENT_POLICY.md).
 
+Các bài học từ repo public và quyết định áp dụng được ghi trong
+[`docs/REFERENCES-AND-BENCHMARKS.md`](docs/REFERENCES-AND-BENCHMARKS.md). State store chuẩn hóa nằm ở
+[`pipeline/state-schema.sql`](pipeline/state-schema.sql); contract Postiz staging nằm ở
+[`pipeline/POSTIZ_API_CONTRACT.md`](pipeline/POSTIZ_API_CONTRACT.md).
+
 ## Cấu trúc repo
 
 ```
@@ -75,6 +80,9 @@ Chính sách claims, an toàn nông nghiệp, bản quyền và quy trình duy�
 │   ├── ARCHITECTURE.md                 # Kiến trúc pipeline tự động hóa
 │   ├── docker-compose.yml              # Dựng n8n + Postiz bằng 1 lệnh
 │   ├── n8n-workflow-content-pipeline.json  # Workflow mẫu import vào n8n
+│   ├── n8n-error-handler-workflow.json # Workflow Error Trigger mẫu
+│   ├── state-schema.sql                 # Source/draft/publishing/audit tables
+│   ├── POSTIZ_API_CONTRACT.md           # Contract staging theo Public API
 │   └── rss-sources.md                  # Nguồn RSS quốc tế đã kiểm chứng
 ├── .env.example                          # Mẫu biến môi trường, không phải secret
 ├── .github/workflows/validate.yml        # CI kiểm tra cấu hình và link

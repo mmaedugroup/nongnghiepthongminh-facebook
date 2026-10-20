@@ -40,6 +40,13 @@ LUỒNG VIDEO (1 video/tuần, cho trụ cột "mô hình thực tế"):
   → Đăng Fanpage dạng Reel (qua Postiz) → Share vào Group thủ công
 ```
 
+### State store và audit log
+
+State store độc lập với bảng nội bộ của n8n/Postiz được mô tả trong `state-schema.sql`. Nó lưu
+`source_items`, `content_drafts`, `publishing_jobs` và `audit_events`, kèm unique constraint cho
+`guid/url_hash` và `idempotency_key`. Nhờ vậy retry không tạo bản ghi trùng, lịch sử người duyệt
+không bị mất và có thể thay công cụ automation mà không mất dữ liệu nghiệp vụ.
+
 ---
 
 ## 2. Các thành phần (toàn bộ miễn phí)
