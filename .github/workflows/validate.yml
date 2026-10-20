@@ -24,6 +24,9 @@ jobs:
           python pipeline/scripts/validate-pipeline-contract.py
           python pipeline/scripts/test-retry-policy.py
 
+      - name: Validate shell scripts
+        run: bash -n pipeline/scripts/*.sh
+
       - name: Validate Docker Compose interpolation
         run: |
           cp .env.example .env
@@ -56,3 +59,26 @@ jobs:
             echo 'Unsafe placeholder found outside approved templates.'
             exit 1
           fi
+
+  state-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: media_state
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d media_state"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run state schema integration test
+        env:
+          STATE_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/media_state
+        run: bash pipeline/scripts/test-state-schema.sh
