@@ -44,6 +44,9 @@ Chi tiết kiến trúc: [`pipeline/ARCHITECTURE.md`](pipeline/ARCHITECTURE.md)
 
 Định hướng tự động hóa sản xuất và publish đa nền tảng: [`docs/MULTI-PLATFORM-AUTOMATION.md`](docs/MULTI-PLATFORM-AUTOMATION.md)
 
+Kiến trúc thử nghiệm tách riêng luồng YouTube và Facebook, dùng chung Gemini content pack
+và tận dụng OpenShorts/Hugging Face cho media: [`docs/AUTOMATION-ARCHITECTURE-YOUTUBE-FACEBOOK.md`](docs/AUTOMATION-ARCHITECTURE-YOUTUBE-FACEBOOK.md)
+
 ### Chạy baseline local
 
 ```bash
@@ -78,6 +81,7 @@ dry-run; lệnh tạo bài staging yêu cầu cờ xác nhận riêng và không
 │   ├── bo-cau-hoi-dinh-hinh-du-an.md   # 65 câu hỏi định hình + câu trả lời
 │   ├── ke-hoach-kenh-facebook.md       # Kế hoạch kênh Facebook chi tiết
 │   ├── CONTENT_POLICY.md                # Policy nội dung và kiểm duyệt
+│   ├── AUTOMATION-ARCHITECTURE-YOUTUBE-FACEBOOK.md # Kiến trúc hai luồng YouTube/Facebook
 │   └── setup-kenh/                     # Bộ setup khi tạo kênh
 │       ├── mota-fanpage.md             # Mô tả fanpage (copy-paste khi tạo trang)
 │       ├── noi-quy-group.md            # Mô tả + nội quy + câu hỏi tham gia group
