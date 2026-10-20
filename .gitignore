@@ -1,0 +1,28 @@
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.secret
+*.key
+
+# Runtime data
+pipeline/data/
+pipeline/backups/
+*.sqlite
+*.sqlite3
+
+# Node/Python/tooling artifacts
+node_modules/
+.n8n/
+__pycache__/
+.pytest_cache/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Generated media and logs
+demo-video-ai/output/
+*.log

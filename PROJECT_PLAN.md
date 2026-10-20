@@ -7,7 +7,7 @@
 |---|---|
 | Chủ dự án | mmaedgroup@gmail.com (GitHub: `mmaedugroup`) |
 | Repo | https://github.com/mmaedugroup/nongnghiepthongminh-facebook |
-| Trạng thái | GĐ 1 xong — chờ quyết định hạ tầng để bắt đầu GĐ 2 |
+| Trạng thái | GĐ 1 tài liệu hóa hoàn tất; GĐ 2 đang dựng baseline local/staging, chưa sẵn sàng production |
 | Ngày cập nhật gần nhất | 2026-10-20 |
 | Ngôn ngữ giao tiếp | Tiếng Việt |
 
@@ -80,7 +80,7 @@ Chi tiết đầy đủ: `docs/bo-cau-hoi-dinh-hinh-du-an.md` (65 câu hỏi đ�
 ## 5. Tiến độ tổng thể
 
 - [x] **GĐ 1 — Tài liệu & thiết kế** (xong 2026-10-20)
-- [ ] **GĐ 2 — Dựng pipeline tự động hoá** (tuần 1–2 của kế hoạch ra mắt)
+- [ ] **GĐ 2 — Dựng pipeline tự động hoá** (baseline local/staging đã bổ sung; chưa chạy end-to-end)
 - [ ] **GĐ 3 — Sản xuất kho nội dung mở đầu** (tuần 3–4)
 - [ ] **GĐ 4 — Tạo kênh & ra mắt**
 - [ ] **GĐ 5 — Vận hành thường xuyên & đo lường**
@@ -96,12 +96,14 @@ Chi tiết đầy đủ: `docs/bo-cau-hoi-dinh-hinh-du-an.md` (65 câu hỏi đ�
       **farmOS** (quản lý trang trại, dùng ở GĐ 6). ⚠️ Repo `facebook-auto-bot` không có giấy phép — chỉ đọc tham khảo.
 - [x] Thiết kế kiến trúc pipeline → `pipeline/ARCHITECTURE.md`
 - [x] Viết `pipeline/docker-compose.yml` (n8n + PostgreSQL + Redis + Postiz)
-- [x] Viết workflow n8n mẫu → `pipeline/n8n-workflow-content-pipeline.json` (9 node, JSON hợp lệ)
+- [x] Viết workflow n8n mẫu → `pipeline/n8n-workflow-content-pipeline.json` (10 node, JSON hợp lệ, có validate structured output)
 - [x] Liệt kê nguồn RSS → `pipeline/rss-sources.md` (AgFunderNews đã kiểm chứng hoạt động)
 - [x] Bộ setup kênh → `docs/setup-kenh/` (mô tả fanpage, nội quy group, lịch nội dung 2 tuần đầu — 8 bài)
 - [x] Demo app tạo video AI (chạy trong trình duyệt) → `demo-video-ai/index.html`
 - [x] Viết hướng dẫn chọn hạ tầng 0đ (bản nháp, chờ duyệt) → `docs/trien-khai-pipeline/huong-dan-chon-vps.md`
 - [x] Viết 2 bản nháp mẫu bài viết (bài 1 + bài 3 tuần 1) (bản nháp, chờ duyệt giọng văn) → `docs/ban-nhap-mau/bai-1-va-bai-3.md`
+
+> GĐ1 chỉ được coi là hoàn tất về mặt tài liệu. Việc Docker, n8n, Postiz và API contract chạy thành công vẫn thuộc GĐ2.
 
 ---
 
@@ -123,10 +125,10 @@ Chi tiết: `pipeline/ARCHITECTURE.md`.
 ### 7.2 Dựng hạ tầng
 
 - [ ] Cài Docker + Docker Compose trên máy/VPS đã chọn
-- [ ] Copy `pipeline/docker-compose.yml`, thay toàn bộ giá trị `CHANGEME` (mật khẩu DB, secret…)
-- [ ] Thêm file `.env` vào `.gitignore`, không commit secrets
-- [ ] Chạy `docker compose up -d`, kiểm tra 4 container lên đủ (n8n, postgres, redis, postiz)
-- [ ] Mở được giao diện n8n (port 5678) và Postiz (port 5000); nếu dùng VPS thì mở firewall 2 port này
+- [x] Thêm `.env.example`, `.gitignore`, tách database n8n/Postiz, healthcheck và bind local mặc định
+- [ ] Copy `.env.example` thành `.env`, thay toàn bộ giá trị mẫu và không commit secrets
+- [ ] Chạy `docker compose --env-file .env -f pipeline/docker-compose.yml up -d`, kiểm tra các container healthy
+- [ ] Nếu dùng VPS: đặt reverse proxy + HTTPS; không mở trực tiếp cổng quản trị n8n/Postiz
 
 ### 7.3 Cấu hình n8n
 
@@ -136,6 +138,14 @@ Chi tiết: `pipeline/ARCHITECTURE.md`.
 - [ ] Điền credentials trong workflow: Gemini key, Postiz token, Telegram bot (đều là placeholder hiện tại)
 - [ ] Kiểm chứng lại từng RSS trong `pipeline/rss-sources.md` còn sống; xoá/thay nguồn chết
 - [ ] Chạy thử workflow bằng tay: xác nhận ra được bản nháp tiếng Việt + thông báo Telegram
+
+### 7.6 Baseline engineering — ✅ ĐÃ BỔ SUNG
+
+- [x] Thêm CI kiểm tra JSON workflow, Compose interpolation, link Markdown nội bộ và placeholder triển khai
+- [x] Bổ sung `docs/CONTENT_POLICY.md` về claims, an toàn, bản quyền và human approval
+- [x] Bổ sung hai tài liệu mẫu bị checklist tham chiếu nhưng thiếu trong repo
+- [x] Yêu cầu Gemini trả JSON có claims/uncertainties/safety note và validate trước khi tạo draft
+- [ ] Thêm dedup/time-window, retry/dead-letter và audit log vào workflow thực tế
 
 ### 7.4 Cấu hình Postiz + kết nối Fanpage
 
@@ -222,14 +232,17 @@ Giọng văn mẫu đã duyệt: `docs/ban-nhap-mau/bai-1-va-bai-3.md` (sau khi 
 │   ├── bo-cau-hoi-dinh-hinh-du-an.md      # 65 câu hỏi định hình + câu trả lời
 │   ├── ke-hoach-kenh-facebook.md          # Kế hoạch kênh chi tiết
 │   ├── setup-kenh/                        # Mô tả fanpage, nội quy group, lịch 2 tuần đầu
-│   ├── trien-khai-pipeline/               # Hướng dẫn chọn hạ tầng (bản nháp)
-│   └── ban-nhap-mau/                      # Bản nháp mẫu bài viết (bản nháp)
+│   ├── CONTENT_POLICY.md                  # Policy nội dung, claims, an toàn, bản quyền
+│   ├── trien-khai-pipeline/               # Hướng dẫn chọn hạ tầng
+│   └── ban-nhap-mau/                      # Bản nháp mẫu bài viết
 ├── pipeline/
 │   ├── ARCHITECTURE.md                    # Kiến trúc pipeline chi tiết
 │   ├── docker-compose.yml                 # n8n + Postgres + Redis + Postiz
 │   ├── n8n-workflow-content-pipeline.json # Workflow mẫu (credentials = placeholder)
 │   └── rss-sources.md                     # Nguồn nội dung quốc tế
-└── demo-video-ai/                         # Demo app tạo video AI trong trình duyệt
+├── demo-video-ai/                         # Demo app tạo video AI trong trình duyệt
+├── .env.example                            # Mẫu cấu hình local, không chứa secret thật
+└── .github/workflows/validate.yml          # Kiểm tra tự động khi push/PR
 ```
 
 ---

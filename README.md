@@ -1,5 +1,8 @@
 # Nông nghiệp thông minh và tử tế
 
+> **Trạng thái kỹ thuật:** Media MVP đang ở giai đoạn dựng baseline local/staging. Repo chưa chứng minh
+> pipeline n8n/Postiz chạy end-to-end và chưa được phép tự động đăng production.
+
 > Mô hình kinh tế – xã hội nông nghiệp thông minh, thí điểm tại **Bà Rịa – Vũng Tàu**.
 > Giúp hộ nông dân nhỏ lẻ, công nhân chuyển nghề và chủ trang trại ứng dụng công nghệ cao,
 > AI, AIoT và tự động hóa trong sản xuất — liên kết mua chung, bán chung, truy xuất nguồn gốc,
@@ -39,6 +42,22 @@ Video (1 video/tuần): kịch bản (Gemini) → giọng đọc (Edge-TTS, free
 
 Chi tiết kiến trúc: [`pipeline/ARCHITECTURE.md`](pipeline/ARCHITECTURE.md)
 
+### Chạy baseline local
+
+```bash
+cp .env.example .env
+# thay mọi giá trị replace-* trong .env
+docker compose --env-file .env -f pipeline/docker-compose.yml config
+docker compose --env-file .env -f pipeline/docker-compose.yml up -d
+```
+
+Các cổng n8n/Postiz chỉ bind vào `127.0.0.1`. Khi chuyển sang VPS phải đặt reverse proxy + HTTPS,
+kiểm thử backup/restore và không mở trực tiếp cổng quản trị ra Internet. Xem
+[`docs/trien-khai-pipeline/huong-dan-chon-vps.md`](docs/trien-khai-pipeline/huong-dan-chon-vps.md).
+
+Chính sách claims, an toàn nông nghiệp, bản quyền và quy trình duyệt nằm trong
+[`docs/CONTENT_POLICY.md`](docs/CONTENT_POLICY.md).
+
 ## Cấu trúc repo
 
 ```
@@ -47,6 +66,7 @@ Chi tiết kiến trúc: [`pipeline/ARCHITECTURE.md`](pipeline/ARCHITECTURE.md)
 ├── docs/
 │   ├── bo-cau-hoi-dinh-hinh-du-an.md   # 65 câu hỏi định hình + câu trả lời
 │   ├── ke-hoach-kenh-facebook.md       # Kế hoạch kênh Facebook chi tiết
+│   ├── CONTENT_POLICY.md                # Policy nội dung và kiểm duyệt
 │   └── setup-kenh/                     # Bộ setup khi tạo kênh
 │       ├── mota-fanpage.md             # Mô tả fanpage (copy-paste khi tạo trang)
 │       ├── noi-quy-group.md            # Mô tả + nội quy + câu hỏi tham gia group
@@ -56,6 +76,8 @@ Chi tiết kiến trúc: [`pipeline/ARCHITECTURE.md`](pipeline/ARCHITECTURE.md)
 │   ├── docker-compose.yml              # Dựng n8n + Postiz bằng 1 lệnh
 │   ├── n8n-workflow-content-pipeline.json  # Workflow mẫu import vào n8n
 │   └── rss-sources.md                  # Nguồn RSS quốc tế đã kiểm chứng
+├── .env.example                          # Mẫu biến môi trường, không phải secret
+├── .github/workflows/validate.yml        # CI kiểm tra cấu hình và link
 └── demo-video-ai/
     ├── index.html                      # Demo app tạo video AI (mở bằng Chrome)
     └── README.md

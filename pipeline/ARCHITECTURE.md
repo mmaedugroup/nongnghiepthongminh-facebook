@@ -3,6 +3,10 @@
 
 > Ngân sách tool: **0đ** (ưu tiên miễn phí) — Tần suất: **3–4 bài/tuần** — Chế độ: **AI tạo nháp → người duyệt → đăng**
 
+> **Trạng thái implementation:** workflow JSON hiện là skeleton staging. Đã có structured output và bước
+> validate trước khi tạo draft; dedup/time-window, retry/dead-letter, Pollinations và API contract Postiz
+> vẫn phải kiểm chứng bằng một test run thật trước khi gọi là end-to-end.
+
 ---
 
 ## 1. Bức tranh tổng thể
@@ -60,11 +64,11 @@ LUỒNG VIDEO (1 video/tuần, cho trụ cột "mô hình thực tế"):
 
 ### Luồng A — Bài viết + ảnh (3 bài/tuần)
 
-1. **Thu thập (tự động, mỗi sáng):** n8n đọc RSS từ ~10 nguồn quốc tế (danh sách trong `rss-sources.md`), lấy bài mới trong 24h.
-2. **Lọc trụ cột (tự động):** lọc theo từ khóa của 3 trụ cột — *mô hình thực tế* (farm, IoT, greenhouse, drone...), *kiến thức khoa học* (soil, fertilizer, disease...), *mẹo hay* (tips, save cost, yield...). Xoay vòng để mỗi tuần đủ 3 trụ cột.
-3. **Viết lại (tự động):** Gemini API dịch + viết lại thành tiếng Việt đơn giản, thêm phần "Áp dụng ở Việt Nam thì sao?" (bản địa hóa) — bước này quan trọng nhất để nội dung quốc tế không bị xa rời nông dân trong nước.
-4. **Ảnh minh họa (tự động):** Pollinations.ai tạo ảnh theo mô tả bài viết.
-5. **Bản nháp (tự động):** đẩy vào Postiz ở trạng thái *draft*, đồng thời gửi tin nhắn Telegram cho bạn: "Có bài mới cần duyệt".
+1. **Thu thập (skeleton):** n8n đọc RSS từ các nguồn mẫu. Cần bổ sung cửa sổ 24h, allowlist và dedup bằng `guid/url_hash` trước pilot.
+2. **Lọc trụ cột (skeleton):** lọc từ khóa để giảm nhiễu. Bước tiếp theo là classifier trả về enum và quota tuần, không im lặng loại bỏ dữ liệu.
+3. **Viết lại (staging):** Gemini được yêu cầu trả JSON gồm `title`, `body`, `pillar`, `claims`, `uncertainties`, `safety_note`, `hashtags`, `source_url`; Code node validate schema trước khi đi tiếp.
+4. **Ảnh minh họa (chưa nối trong workflow):** Pollinations.ai chỉ được thêm sau khi chốt license/attribution và test retry; không mô tả đây là bước đã chạy.
+5. **Bản nháp (staging):** gửi object payload vào Postiz ở trạng thái *draft*, đồng thời gửi Telegram; endpoint/payload Postiz phải được test theo docs phiên bản đang chạy.
 6. **Duyệt (thủ công, ~5 phút/bài):** bạn mở Postiz, đọc lướt, sửa nếu cần, bấm duyệt.
 7. **Đăng (tự động):** Postiz đăng lên **Fanpage** theo lịch. Bài quan trọng → bạn share thủ công vào **Group** (xem mục 4).
 

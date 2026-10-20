@@ -1,0 +1,50 @@
+name: Validate repository
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate JSON workflow
+        run: python -m json.tool pipeline/n8n-workflow-content-pipeline.json >/dev/null
+
+      - name: Validate Docker Compose interpolation
+        run: |
+          cp .env.example .env
+          docker compose --env-file .env -f pipeline/docker-compose.yml config >/dev/null
+
+      - name: Check internal Markdown links
+        shell: bash
+        run: |
+          python - <<'PY'
+          import pathlib, re, sys
+          root = pathlib.Path('.')
+          missing = []
+          for path in root.rglob('*.md'):
+              text = path.read_text(encoding='utf-8')
+              for target in re.findall(r'\[[^]]+\]\(([^)#]+)(?:#[^)]+)?\)', text):
+                  if '://' in target or target.startswith('mailto:'):
+                      continue
+                  candidate = (path.parent / target).resolve()
+                  if not candidate.exists():
+                      missing.append(f'{path}: {target}')
+          if missing:
+              print('\n'.join(missing))
+              sys.exit('Broken internal Markdown links found')
+          PY
+
+      - name: Reject committed placeholder secrets
+        run: |
+          if grep -RInE 'CHANGEME|<server-ip>|password[=:][[:space:]]*secret' \
+              --exclude-dir=.git --exclude='.env.example' --exclude='validate.yml' .; then
+            echo 'Unsafe placeholder found outside approved templates.'
+            exit 1
+          fi
