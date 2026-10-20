@@ -32,6 +32,20 @@ Sau khi lưu Error Workflow, ghi lại **workflow ID**. Trong phần Settings c�
 `NNTT - Content Pipeline` và `NNTT - Publish approved drafts (Postiz)`, chọn
 workflow lỗi này. Không dùng tên workflow hoặc ID từ một instance n8n khác.
 
+## 2.1. Duyệt bản nháp và tạo job publish
+
+Intake ghi bản nháp vào state database nhưng không gọi Postiz. Sau khi người
+duyệt kiểm tra nội dung, gọi hàm atomic dưới đây trên state database (thay
+`123` và `reviewer-name` bằng giá trị thật):
+
+```sql
+SELECT approve_content_draft(123, 'reviewer-name', 'facebook_page');
+```
+
+Hàm này chỉ cho phép chuyển từ `needs_review` sang `approved`, ghi audit event
+và tạo `publishing_jobs` với `idempotency_key` ổn định. Không sửa trực tiếp
+`approved_at` hoặc chèn job bằng tay trong staging test.
+
 Không bật `active` cho Error Workflow trước khi credential đã được gán; không copy credential ID từ một instance khác.
 
 ## 3. Read-only Postiz check

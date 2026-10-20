@@ -39,6 +39,21 @@ services:
       timeout: 5s
       retries: 5
 
+  postgres-state:
+    image: ${POSTGRES_IMAGE:?Set POSTGRES_IMAGE in .env}
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${STATE_DB_USER:?Set STATE_DB_USER in .env}
+      POSTGRES_PASSWORD: ${STATE_DB_PASSWORD:?Set STATE_DB_PASSWORD in .env}
+      POSTGRES_DB: ${STATE_DB_NAME:?Set STATE_DB_NAME in .env}
+    volumes:
+      - state_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: ${REDIS_IMAGE:?Set REDIS_IMAGE in .env}
     restart: unless-stopped
@@ -74,6 +89,8 @@ services:
     depends_on:
       postgres-n8n:
         condition: service_healthy
+      postgres-state:
+        condition: service_healthy
 
   postiz:
     image: ${POSTIZ_IMAGE:?Set POSTIZ_IMAGE in .env}
@@ -95,5 +112,6 @@ services:
 volumes:
   n8n_pgdata:
   postiz_pgdata:
+  state_pgdata:
   redisdata:
   n8n_data:

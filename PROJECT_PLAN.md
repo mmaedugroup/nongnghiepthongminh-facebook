@@ -153,7 +153,7 @@ Chi tiết: `pipeline/ARCHITECTURE.md`.
 - [x] Thêm workflow Error Trigger mẫu → `pipeline/n8n-error-handler-workflow.json`
 - [x] Đóng gói staging runbook + script migration state + test contract Postiz an toàn
   → `pipeline/STAGING_RUNBOOK.md`, `pipeline/scripts/`
-- [ ] Thêm dedup/time-window, retry/dead-letter và audit log vào workflow thực tế
+- [x] Thêm dedup theo source/prompt, candidate time-window, retry/dead-letter và audit log vào workflow thực tế
 
 ### 7.4 Cấu hình Postiz + kết nối Fanpage
 

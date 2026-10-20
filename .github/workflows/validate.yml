@@ -20,7 +20,9 @@ jobs:
           python -m json.tool pipeline/n8n-error-handler-workflow.json >/dev/null
 
       - name: Validate staging contracts
-        run: python pipeline/scripts/validate-pipeline-contract.py
+        run: |
+          python pipeline/scripts/validate-pipeline-contract.py
+          python pipeline/scripts/test-retry-policy.py
 
       - name: Validate Docker Compose interpolation
         run: |
