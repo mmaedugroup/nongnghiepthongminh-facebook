@@ -42,6 +42,8 @@ Video (1 video/tuần): kịch bản (Gemini) → giọng đọc (Edge-TTS, free
 
 Chi tiết kiến trúc: [`pipeline/ARCHITECTURE.md`](pipeline/ARCHITECTURE.md)
 
+Định hướng tự động hóa sản xuất và publish đa nền tảng: [`docs/MULTI-PLATFORM-AUTOMATION.md`](docs/MULTI-PLATFORM-AUTOMATION.md)
+
 ### Chạy baseline local
 
 ```bash
