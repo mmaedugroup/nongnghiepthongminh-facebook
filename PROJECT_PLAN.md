@@ -129,6 +129,7 @@ Chi tiết: `pipeline/ARCHITECTURE.md`.
 - [ ] Copy `.env.example` thành `.env`, thay toàn bộ giá trị mẫu và không commit secrets
 - [ ] Chạy `docker compose --env-file .env -f pipeline/docker-compose.yml up -d`, kiểm tra các container healthy
 - [ ] Nếu dùng VPS: đặt reverse proxy + HTTPS; không mở trực tiếp cổng quản trị n8n/Postiz
+- [ ] Chạy `pipeline/scripts/apply-state-schema.sh` trên staging host
 
 ### 7.3 Cấu hình n8n
 
@@ -138,6 +139,7 @@ Chi tiết: `pipeline/ARCHITECTURE.md`.
 - [ ] Điền credentials trong workflow: Gemini key, Postiz token, Telegram bot (đều là placeholder hiện tại)
 - [ ] Kiểm chứng lại từng RSS trong `pipeline/rss-sources.md` còn sống; xoá/thay nguồn chết
 - [ ] Chạy thử workflow bằng tay: xác nhận ra được bản nháp tiếng Việt + thông báo Telegram
+- [ ] Import `pipeline/n8n-error-handler-workflow.json`, gán Error Workflow và test lỗi giả lập
 
 ### 7.6 Baseline engineering — ✅ ĐÃ BỔ SUNG
 
@@ -149,6 +151,8 @@ Chi tiết: `pipeline/ARCHITECTURE.md`.
 - [x] Thêm state schema độc lập cho source/draft/publishing/audit → `pipeline/state-schema.sql`
 - [x] Thêm contract staging của Postiz theo Public API → `pipeline/POSTIZ_API_CONTRACT.md`
 - [x] Thêm workflow Error Trigger mẫu → `pipeline/n8n-error-handler-workflow.json`
+- [x] Đóng gói staging runbook + script migration state + test contract Postiz an toàn
+  → `pipeline/STAGING_RUNBOOK.md`, `pipeline/scripts/`
 - [ ] Thêm dedup/time-window, retry/dead-letter và audit log vào workflow thực tế
 
 ### 7.4 Cấu hình Postiz + kết nối Fanpage
@@ -158,6 +162,7 @@ Chi tiết: `pipeline/ARCHITECTURE.md`.
 - [ ] Tạo Facebook App tại developers.facebook.com, lấy token có quyền đăng lên Page
       (quy trình chi tiết phải đối chiếu tài liệu Meta tại thời điểm thực hiện — API thay đổi thường xuyên)
 - [ ] Kết nối Fanpage vào Postiz; đăng thử 1 bài test lên trang (hoặc bản nháp) và kiểm chứng hiển thị
+- [ ] Chạy `pipeline/scripts/test-postiz-contract.sh --check`; chỉ chạy `--create` sau khi xác nhận đúng integration staging
 - [ ] Đặt lịch đăng mặc định khớp lịch nội dung: T2/T4/T6/CN
 
 ### 7.5 Pipeline video

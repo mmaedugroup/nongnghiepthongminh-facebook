@@ -63,6 +63,10 @@ Các bài học từ repo public và quyết định áp dụng được ghi tro
 [`pipeline/state-schema.sql`](pipeline/state-schema.sql); contract Postiz staging nằm ở
 [`pipeline/POSTIZ_API_CONTRACT.md`](pipeline/POSTIZ_API_CONTRACT.md).
 
+Khi có máy staging, làm theo [`pipeline/STAGING_RUNBOOK.md`](pipeline/STAGING_RUNBOOK.md). Hai script
+`pipeline/scripts/apply-state-schema.sh` và `pipeline/scripts/test-postiz-contract.sh` mặc định chỉ
+dry-run; lệnh tạo bài staging yêu cầu cờ xác nhận riêng và không chạy được nếu thiếu credentials.
+
 ## Cấu trúc repo
 
 ```
