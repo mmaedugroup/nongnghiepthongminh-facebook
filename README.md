@@ -42,6 +42,8 @@ Chi tiết kiến trúc: [`pipeline/ARCHITECTURE.md`](pipeline/ARCHITECTURE.md)
 ## Cấu trúc repo
 
 ```
+├── README.md                              # Tổng quan dự án
+├── PROJECT_PLAN.md                        # Kế hoạch + checklist cho AI tiếp tục
 ├── docs/
 │   ├── bo-cau-hoi-dinh-hinh-du-an.md   # 65 câu hỏi định hình + câu trả lời
 │   ├── ke-hoach-kenh-facebook.md       # Kế hoạch kênh Facebook chi tiết
