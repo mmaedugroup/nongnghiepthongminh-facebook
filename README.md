@@ -44,7 +44,11 @@ Chi tiết kiến trúc: [`pipeline/ARCHITECTURE.md`](pipeline/ARCHITECTURE.md)
 ```
 ├── docs/
 │   ├── bo-cau-hoi-dinh-hinh-du-an.md   # 65 câu hỏi định hình + câu trả lời
-│   └── ke-hoach-kenh-facebook.md       # Kế hoạch kênh Facebook chi tiết
+│   ├── ke-hoach-kenh-facebook.md       # Kế hoạch kênh Facebook chi tiết
+│   └── setup-kenh/                     # Bộ setup khi tạo kênh
+│       ├── mota-fanpage.md             # Mô tả fanpage (copy-paste khi tạo trang)
+│       ├── noi-quy-group.md            # Mô tả + nội quy + câu hỏi tham gia group
+│       └── lich-noi-dung-2-tuan-dau.md # Lịch 8 bài mở đầu chi tiết
 ├── pipeline/
 │   ├── ARCHITECTURE.md                 # Kiến trúc pipeline tự động hóa
 │   ├── docker-compose.yml              # Dựng n8n + Postiz bằng 1 lệnh
