@@ -28,6 +28,10 @@ Script dùng `ON_ERROR_STOP=1`; nếu thiếu `psql` hoặc URL sẽ dừng, kh�
 7. Test bằng cách tạm thời dùng một Code node `throw new Error('staging error test')`, chạy manual và xác nhận Telegram nhận cảnh báo.
 8. Xóa node test hoặc khôi phục workflow trước khi bật lịch.
 
+Sau khi lưu Error Workflow, ghi lại **workflow ID**. Trong phần Settings của cả
+`NNTT - Content Pipeline` và `NNTT - Publish approved drafts (Postiz)`, chọn
+workflow lỗi này. Không dùng tên workflow hoặc ID từ một instance n8n khác.
+
 Không bật `active` cho Error Workflow trước khi credential đã được gán; không copy credential ID từ một instance khác.
 
 ## 3. Read-only Postiz check
