@@ -10,10 +10,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 intake = json.loads((ROOT / 'pipeline/n8n-workflow-content-pipeline.json').read_text())
 publish = json.loads((ROOT / 'pipeline/n8n-workflow-publish-approved.json').read_text())
+error_workflow = json.loads((ROOT / 'pipeline/n8n-error-handler-workflow.json').read_text())
 schema = (ROOT / 'pipeline/state-schema.sql').read_text()
 
 intake_text = json.dumps(intake, ensure_ascii=False)
 publish_text = json.dumps(publish, ensure_ascii=False)
+error_text = json.dumps(error_workflow, ensure_ascii=False)
 errors = []
 
 def check(condition, message):
@@ -30,6 +32,7 @@ check('approved_at' in publish_text and 'reviewer' in publish_text, 'Publish wor
 check('n8n-nodes-base.postgres' in publish_text and 'FOR UPDATE OF pj SKIP LOCKED' in publish_text, 'Publish workflow is missing a locked state-store candidate query.')
 check('claimed_at' in publish_text and 'Thu hoi job publish bi ket' in publish_text, 'Publish workflow is missing durable claim recovery.')
 check('Idempotency-Key' in publish_text, 'Publish workflow has no idempotency header.')
+check('continueOnFail' in publish_text and 'Chi bao loi dead-letter' in publish_text, 'Provider failure is not routed through the state updater/dead-letter gate.')
 check('retry_policy' in publish_text and ('[30, 120, 600]' in publish_text or '[30,120,600]' in publish_text), 'Retry/dead-letter policy is missing.')
 check(publish.get('settings', {}).get('errorWorkflow') == 'NNTT - Error Handler', 'Publish errorWorkflow is not assigned.')
 check('UNIQUE (url_hash)' in schema and 'idempotency_key TEXT NOT NULL UNIQUE' in schema, 'State uniqueness constraints are missing.')
@@ -37,6 +40,7 @@ check('approved_at IS NOT NULL' in schema and 'reviewer IS NOT NULL' in schema, 
 check("'publishing'" in schema and 'claimed_at TIMESTAMPTZ' in schema, 'In-flight publishing state is missing.')
 check('ux_content_drafts_source_prompt_active' in schema, 'Active draft dedup index is missing.')
 check('approve_content_draft' in schema and "'draft:' || v_source_url" in schema, 'Atomic approval-to-publish function is missing.')
+check('audit_sql' in error_text and 'n8n-nodes-base.postgres' in error_text, 'Error Workflow does not persist a state audit event.')
 
 if errors:
     print('\n'.join(f'ERROR: {e}' for e in errors))
