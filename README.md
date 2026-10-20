@@ -1,0 +1,64 @@
+# Nông nghiệp thông minh và tử tế
+
+> Mô hình kinh tế – xã hội nông nghiệp thông minh, thí điểm tại **Bà Rịa – Vũng Tàu**.
+> Giúp hộ nông dân nhỏ lẻ, công nhân chuyển nghề và chủ trang trại ứng dụng công nghệ cao,
+> AI, AIoT và tự động hóa trong sản xuất — liên kết mua chung, bán chung, truy xuất nguồn gốc,
+> đạt chuẩn VietGAP/GlobalGAP. Tham khảo mô hình Moshav (Israel), hợp tác xã Nhật Bản, Hàn Quốc.
+
+## Kênh truyền thông
+
+**Fanpage + Group Facebook: "Nông nghiệp thông minh và tử tế"** (ra mắt trong 2–4 tuần)
+
+| Quyết định | Nội dung |
+|---|---|
+| Cấu trúc | Fanpage đăng nội dung + Group làm cộng đồng thảo luận |
+| Mục tiêu 3–6 tháng đầu | Lan tỏa kiến thức |
+| Định dạng | Kết hợp linh hoạt (video ngắn + bài viết + ảnh) |
+| Tần suất | 3–4 bài/tuần, xoay vòng 3 trụ cột |
+| 3 trụ cột nội dung | Mô hình thực tế · Kiến thức khoa học · Mẹo hay áp dụng ngay |
+| Nguồn nội dung | Tổng hợp từ nguồn quốc tế, biên tập lại cho nông dân Việt Nam |
+| Vận hành | AI tạo bản nháp → người duyệt → đăng; AI hỗ trợ kiểm duyệt group |
+| Ngân sách tool | Ưu tiên miễn phí (0đ) |
+
+Chi tiết: [`docs/ke-hoach-kenh-facebook.md`](docs/ke-hoach-kenh-facebook.md)
+
+## Pipeline tự động hóa nội dung (0đ tiền tool)
+
+```
+RSS quốc tế → n8n → Gemini API (free): dịch + viết lại tiếng Việt
+→ Ảnh minh họa (Pollinations.ai) → Bản nháp trong Postiz
+→ Telegram báo duyệt → Bạn duyệt → Tự động đăng Fanpage
+```
+
+Video (1 video/tuần): kịch bản (Gemini) → giọng đọc (Edge-TTS, free)
+→ ghép ảnh/stock + phụ đề (ffmpeg) → Reel 9:16.
+
+> ⚠️ **Lưu ý quan trọng:** Meta đã đóng Groups API từ tháng 4/2024 —
+> không tool nào tự động đăng bài vào Group được nữa.
+> Pipeline tự động đăng lên **Fanpage**; bài quan trọng share thủ công vào **Group**.
+
+Chi tiết kiến trúc: [`pipeline/ARCHITECTURE.md`](pipeline/ARCHITECTURE.md)
+
+## Cấu trúc repo
+
+```
+├── docs/
+│   ├── bo-cau-hoi-dinh-hinh-du-an.md   # 65 câu hỏi định hình + câu trả lời
+│   └── ke-hoach-kenh-facebook.md       # Kế hoạch kênh Facebook chi tiết
+├── pipeline/
+│   ├── ARCHITECTURE.md                 # Kiến trúc pipeline tự động hóa
+│   ├── docker-compose.yml              # Dựng n8n + Postiz bằng 1 lệnh
+│   ├── n8n-workflow-content-pipeline.json  # Workflow mẫu import vào n8n
+│   └── rss-sources.md                  # Nguồn RSS quốc tế đã kiểm chứng
+└── demo-video-ai/
+    ├── index.html                      # Demo app tạo video AI (mở bằng Chrome)
+    └── README.md
+```
+
+## Tài liệu gốc
+
+- File Word gốc: `01-bo-cau-hoi-dinh-hinh-du-an.docx` (bản markdown đầy đủ tại `docs/bo-cau-hoi-dinh-hinh-du-an.md`)
+
+## Giấy phép
+
+Chưa xác định — sẽ bổ sung khi dự án chốt mô hình tổ chức.

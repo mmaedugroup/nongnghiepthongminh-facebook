@@ -1,0 +1,74 @@
+# Docker Compose — Hạ tầng pipeline nội dung
+# "Nông nghiệp thông minh và tử tế"
+#
+# Cách dùng:
+#   1. Copy file này thành docker-compose.yml trên VPS (hoặc máy cá nhân)
+#   2. Sửa các giá trị CHANGEME bên dưới
+#   3. Chạy: docker compose up -d
+#   4. n8n:      http://<server-ip>:5678
+#      Postiz:   http://<server-ip>:5000
+#
+# LƯU Ý: đây là mẫu khởi đầu. Khi triển khai thật, đối chiếu với
+# tài liệu chính thức của n8n và Postiz (docs.n8n.io, github.com/gitroomhq/postiz-app)
+# vì biến môi trường có thể thay đổi theo phiên bản.
+
+services:
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nntt
+      POSTGRES_PASSWORD: CHANGEME_DB_PASSWORD
+      POSTGRES_DB: nntt
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redisdata:/data
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=nntt
+      - DB_POSTGRESDB_USER=nntt
+      - DB_POSTGRESDB_PASSWORD=CHANGEME_DB_PASSWORD
+      - GENERIC_TIMEZONE=Asia/Ho_Chi_Minh
+      - TZ=Asia/Ho_Chi_Minh
+      # Key dùng cho workflow gọi Gemini / Telegram — nhập trong n8n Credentials,
+      # KHÔNG ghi trực tiếp vào file này khi share cho người khác.
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - postgres
+
+  postiz:
+    image: ghcr.io/gitroomhq/postiz-app:latest
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - DATABASE_URL=postgresql://nntt:CHANGEME_DB_PASSWORD@postgres:5432/nntt
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=CHANGEME_JWT_SECRET_32_CHARS_MIN
+      - FRONTEND_URL=http://<server-ip>:5000
+      - BACKEND_URL=http://<server-ip>:5000/api
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  pgdata:
+  redisdata:
+  n8n_data:

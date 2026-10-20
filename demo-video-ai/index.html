@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Demo: App tạo video AI tự động</title>
+<style>
+  :root { --bg:#0f1115; --card:#171b22; --line:#262c36; --txt:#e8ecf1; --dim:#9aa3b2; --acc:#7c5cff; --acc2:#00d4a4; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:22px 20px 6px; max-width:1080px; margin:0 auto; }
+  header h1 { margin:0 0 6px; font-size:22px; }
+  header p { margin:0; color:var(--dim); font-size:14px; line-height:1.5; }
+  main { display:flex; gap:20px; max-width:1080px; margin:0 auto; padding:16px 20px 40px; flex-wrap:wrap; }
+  .panel { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; }
+  #controls { flex:1 1 340px; min-width:300px; }
+  #preview { flex:0 1 360px; margin:0 auto; text-align:center; }
+  label { display:block; font-size:13px; color:var(--dim); margin:14px 0 6px; }
+  textarea { width:100%; min-height:150px; resize:vertical; background:#0d1014; color:var(--txt);
+    border:1px solid var(--line); border-radius:10px; padding:12px; font-size:14px; line-height:1.6; }
+  select, input[type=range] { width:100%; }
+  select { background:#0d1014; color:var(--txt); border:1px solid var(--line); border-radius:10px; padding:10px; font-size:14px; }
+  .row { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
+  button { flex:1 1 auto; border:0; border-radius:10px; padding:12px 14px; font-size:14px; font-weight:600; cursor:pointer; }
+  #btnPlay { background:var(--acc); color:#fff; }
+  #btnStop { background:#2a3140; color:var(--txt); }
+  #btnExport { background:var(--acc2); color:#04281f; }
+  button:disabled { opacity:.45; cursor:default; }
+  #status { margin-top:12px; font-size:13px; color:var(--dim); min-height:20px; line-height:1.5; }
+  #progress { height:6px; background:#0d1014; border-radius:3px; margin-top:10px; overflow:hidden; }
+  #progressBar { height:100%; width:0%; background:linear-gradient(90deg,var(--acc),var(--acc2)); transition:width .3s; }
+  canvas { width:100%; max-width:320px; border-radius:14px; border:1px solid var(--line); background:#000; }
+  .note { font-size:12.5px; color:var(--dim); line-height:1.6; margin-top:14px; }
+  .note b { color:var(--txt); }
+  .steps { font-size:13px; color:var(--dim); line-height:1.7; margin:6px 0 0; padding-left:18px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🎬 Demo: App tạo video AI tự động</h1>
+  <p>Bản demo chạy 100% trên trình duyệt, không cần API key: nhập kịch bản → giọng đọc tiếng Việt → nhân vật hoạt hình nói + phụ đề → xuất video khổ 9:16.</p>
+</header>
+<main>
+  <section class="panel" id="controls">
+    <label for="script">1. Kịch bản (tiếng Việt)</label>
+    <textarea id="script">Xin chào! Đây là video demo được tạo hoàn toàn tự động.
+Bạn chỉ cần nhập kịch bản, app sẽ lo phần còn lại: giọng đọc, nhân vật, phụ đề.
+Phiên bản thật sẽ dùng giọng AI cao cấp và nhân vật chân thực hơn nhiều nhé!</textarea>
+
+    <label for="voice">2. Giọng đọc</label>
+    <select id="voice"><option>Đang tải danh sách giọng…</option></select>
+
+    <label for="rate">3. Tốc độ đọc: <span id="rateVal">1.0</span>x</label>
+    <input type="range" id="rate" min="0.7" max="1.3" step="0.05" value="1">
+
+    <div class="row">
+      <button id="btnPlay">▶ Xem thử</button>
+      <button id="btnStop" disabled>⏹ Dừng</button>
+      <button id="btnExport">⬇ Xuất video WebM</button>
+    </div>
+    <div id="progress"><div id="progressBar"></div></div>
+    <div id="status">Nhấn “Xem thử” để bắt đầu.</div>
+
+    <p class="note"><b>Pipeline mà demo này mô phỏng:</b></p>
+    <ol class="steps">
+      <li>Kịch bản → chia đoạn, căn thời gian</li>
+      <li>Text-to-Speech → file giọng đọc</li>
+      <li>Nhân vật AI nói + khớp khẩu hình</li>
+      <li>Burn-in phụ đề, nhạc nền, xuất 9:16</li>
+    </ol>
+    <p class="note"><b>Lưu ý trung thực:</b> bản demo dùng giọng đọc có sẵn của trình duyệt và nhân vật vẽ tay, nên chưa “chân thực như người thật”.
+    File xuất ra <b>giờ đã có tiếng</b> nhờ giọng đọc online miễn phí (cần có mạng). Muốn giọng tự nhiên hơn nữa thì bản thật dùng API như ElevenLabs + HeyGen, xem chi tiết trong <b>README.md</b>.</p>
+  </section>
+
+  <section class="panel" id="preview">
+    <canvas id="stage" width="540" height="960"></canvas>
+    <p class="note" style="text-align:left">Khung hình 540×960 (tỉ lệ 9:16, chuẩn reel/TikTok).</p>
+  </section>
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var canvas = document.getElementById('stage');
+  var ctx = canvas.getContext('2d');
+  var W = canvas.width, H = canvas.height;
+
+  var scriptEl = document.getElementById('script');
+  var voiceEl = document.getElementById('voice');
+  var rateEl = document.getElementById('rate');
+  var rateVal = document.getElementById('rateVal');
+  var btnPlay = document.getElementById('btnPlay');
+  var btnStop = document.getElementById('btnStop');
+  var btnExport = document.getElementById('btnExport');
+  var statusEl = document.getElementById('status');
+  var progressBar = document.getElementById('progressBar');
+
+  var speaking = false;       // có đang đọc hay không
+  var mouthOpen = 0;          // độ mở miệng 0..1 (để vẽ)
+  var chunkIndex = 0, chunks = [];
+  var recorder = null, recChunks = [], recMime = '', recording = false;
+  var tabStream = null;   // stream thu âm thanh của tab khi xuất video có tiếng
+  var t0 = performance.now();
+
+  rateEl.addEventListener('input', function(){ rateVal.textContent = rateEl.value; });
+
+  /* ---------- Giọng đọc ---------- */
+  function loadVoices(){
+    if(!('speechSynthesis' in window)){ voiceEl.innerHTML = '<option>Trình duyệt không hỗ trợ đọc giọng nói</option>'; return; }
+    var vs = speechSynthesis.getVoices();
+    if(!vs.length) return;
+    voiceEl.innerHTML = '';
+    var vi = vs.filter(function(v){ return v.lang && v.lang.toLowerCase().indexOf('vi') === 0; });
+    var rest = vs.filter(function(v){ return !(v.lang && v.lang.toLowerCase().indexOf('vi') === 0); });
+    vi.concat(rest).forEach(function(v,i){
+      var o = document.createElement('option');
+      o.value = i; o.textContent = v.name + ' (' + v.lang + ')';
+      o.dataset.idx = vs.indexOf(v);
+      voiceEl.appendChild(o);
+    });
+  }
+  if('speechSynthesis' in window){
+    loadVoices();
+    speechSynthesis.onvoiceschanged = loadVoices;
+  }
+
+  /* ---------- Chia kịch bản thành đoạn cho phụ đề ---------- */
+  function chunkText(t){
+    var out = [];
+    t.split(/\n+/).forEach(function(p){
+      p = p.trim(); if(!p) return;
+      var parts = p.match(/[^.!?…]+[.!?…]?/g) || [p];
+      var cur = '';
+      parts.forEach(function(x){
+        if((cur + x).length > 80 && cur){ out.push(cur.trim()); cur = x; }
+        else cur += x;
+      });
+      if(cur.trim()) out.push(cur.trim());
+    });
+    return out.filter(Boolean);
+  }
+
+  function wrapLines(text, maxWidth){
+    var words = text.split(/\s+/), lines = [], line = '';
+    words.forEach(function(w){
+      var test = line ? line + ' ' + w : w;
+      if(ctx.measureText(test).width > maxWidth && line){ lines.push(line); line = w; }
+      else line = test;
+    });
+    if(line) lines.push(line);
+    return lines.slice(0, 2);
+  }
+
+  /* ---------- Đọc nối tiếp từng đoạn ---------- */
+  function speakChunks(list, onDone){
+    chunks = list; chunkIndex = 0;
+    if(!list.length){ onDone && onDone(); return; }
+    speaking = true;
+    setStatus('Đang đọc đoạn 1/' + list.length + '…');
+    speakOne(0, onDone);
+  }
+  function speakOne(i, onDone){
+    chunkIndex = i;
+    updateProgress();
+    var u = new SpeechSynthesisUtterance(chunks[i]);
+    u.lang = 'vi-VN';
+    u.rate = parseFloat(rateEl.value);
+    var vs = speechSynthesis.getVoices();
+    var sel = voiceEl.options[voiceEl.selectedIndex];
+    if(sel && sel.dataset.idx !== undefined && vs[+sel.dataset.idx]) u.voice = vs[+sel.dataset.idx];
+    u.onend = u.onerror = function(){
+      if(i + 1 < chunks.length){ setStatus('Đang đọc đoạn ' + (i+2) + '/' + chunks.length + '…'); speakOne(i+1, onDone); }
+      else { speaking = false; updateProgress(); onDone && onDone(); }
+    };
+    speechSynthesis.speak(u);
+  }
+
+  function setStatus(t){ statusEl.textContent = t; }
+  function updateProgress(){
+    var p = chunks.length ? Math.round(((chunkIndex + (speaking?0:1)) / chunks.length) * 100) : 0;
+    progressBar.style.width = Math.min(100, p) + '%';
+  }
+
+  /* ---------- Vẽ nhân vật ---------- */
+  var blinkAt = 0, blinkUntil = 0;
+  function draw(now){
+    var t = (now - t0) / 1000;
+
+    // Nền studio: gradient ấm + bokeh
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#2b2440'); g.addColorStop(0.55, '#1b1830'); g.addColorStop(1, '#100e1c');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = 0.16;
+    [[120,220,60,'#7c5cff'],[430,300,80,'#00d4a4'],[300,700,90,'#ff9d5c']].forEach(function(b){
+      var rg = ctx.createRadialGradient(b[0], b[1], 0, b[0], b[1], b[2]);
+      rg.addColorStop(0, b[3]); rg.addColorStop(1, 'transparent');
+      ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(b[0], b[1], b[2], 0, 7); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    // Lắc đầu nhẹ cho tự nhiên
+    var bobY = Math.sin(t * 1.4) * 5;
+    var tilt = Math.sin(t * 0.9) * 0.02;
+    ctx.save();
+    ctx.translate(W/2, 430 + bobY);
+    ctx.rotate(tilt);
+
+    // Vai / áo
+    ctx.fillStyle = '#3a4a63';
+    ctx.beginPath();
+    ctx.moveTo(-190, 530); ctx.quadraticCurveTo(-180, 300, -95, 265);
+    ctx.lineTo(95, 265); ctx.quadraticCurveTo(180, 300, 190, 530);
+    ctx.closePath(); ctx.fill();
+    // Cổ
+    ctx.fillStyle = '#e8b98d';
+    ctx.fillRect(-32, 200, 64, 80);
+    // Đầu
+    ctx.fillStyle = '#f0c194';
+    ctx.beginPath(); ctx.ellipse(0, 90, 105, 125, 0, 0, 7); ctx.fill();
+    // Tóc
+    ctx.fillStyle = '#2c2118';
+    ctx.beginPath(); ctx.ellipse(0, 15, 108, 70, 0, Math.PI, 0); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(-95, 90, 22, 70, 0.15, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(95, 90, 22, 70, -0.15, 0, 7); ctx.fill();
+
+    // Chớp mắt
+    if(now > blinkAt){ blinkUntil = now + 130; blinkAt = now + 2200 + Math.random() * 2600; }
+    var eyeH = now < blinkUntil ? 2 : 13;
+    ctx.fillStyle = '#1c1410';
+    ctx.beginPath(); ctx.ellipse(-42, 80, 17, eyeH, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(42, 80, 17, eyeH, 0, 0, 7); ctx.fill();
+    // Lông mày
+    ctx.strokeStyle = '#2c2118'; ctx.lineWidth = 7; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-62, 48); ctx.quadraticCurveTo(-42, 40, -22, 48); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(22, 48); ctx.quadraticCurveTo(42, 40, 62, 48); ctx.stroke();
+    // Mũi
+    ctx.strokeStyle = '#d89e6f'; ctx.lineWidth = 6;
+    ctx.beginPath(); ctx.moveTo(0, 95); ctx.quadraticCurveTo(8, 118, 0, 128); ctx.stroke();
+
+    // Miệng: mở theo giọng nói
+    var target = speaking ? (0.35 + 0.65 * Math.abs(Math.sin(t * 22)) * (0.6 + 0.4 * Math.sin(t * 7.3))) : 0.06;
+    mouthOpen += (target - mouthOpen) * 0.35;
+    var mh = 6 + mouthOpen * 34, mw = 26 + mouthOpen * 10;
+    ctx.fillStyle = '#7a2f28';
+    ctx.beginPath(); ctx.ellipse(0, 165, mw, mh, 0, 0, 7); ctx.fill();
+
+    ctx.restore();
+
+    // Phụ đề
+    if(chunks.length && chunkIndex < chunks.length){
+      ctx.font = '600 30px -apple-system, "Segoe UI", Roboto, sans-serif';
+      var lines = wrapLines(chunks[chunkIndex], W - 90);
+      var boxH = lines.length * 42 + 30;
+      var boxY = H - boxH - 60;
+      ctx.fillStyle = 'rgba(0,0,0,0.62)';
+      ctx.beginPath();
+      if(ctx.roundRect) ctx.roundRect(35, boxY, W - 70, boxH, 14); else ctx.rect(35, boxY, W - 70, boxH);
+      ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      lines.forEach(function(ln, i){ ctx.fillText(ln, W/2, boxY + 16 + i * 42); });
+    }
+
+    // Chữ ký demo
+    ctx.fillStyle = 'rgba(255,255,255,0.45)'; ctx.font = '500 20px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText('AI VIDEO DEMO', W - 24, 40);
+
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+
+  /* ---------- Giọng TTS online cho bản xuất ---------- */
+  // speechSynthesis không đưa được vào MediaStream, nên bản xuất thử dùng giọng
+  // TTS online miễn phí: thẻ <audio> phát file mp3, lấy track tiếng qua
+  // audio.captureStream() rồi ghép chung với track hình của canvas.
+  // LƯU Ý (xác minh 2026-10-11): trình duyệt tắt tiếng (muted) track ghi được từ
+  // audio khác origin khi server không gửi Access-Control-Allow-Origin — Google
+  // TTS không gửi header này (đã kiểm tra response headers). Vì vậy track tiếng
+  // ghép vào luôn im lặng; code bên dưới phát hiện track bị muted và rẽ sang
+  // nhánh "không tiếng" một cách trung thực thay vì báo thành công giả.
+  // Muốn file xuất ra có tiếng thật: dùng API TTS có key (ElevenLabs, FPT.AI…)
+  // để tải file mp3 về rồi ghép bằng ffmpeg, hoặc bật CORS proxy.
+  // Từ 2026-10-11: nhánh chính khi bấm "Xuất video" là thu âm thanh của tab qua
+  // getDisplayMedia() (không cần key) — xem requestTabAudioThenExport().
+  var ttsAudio = new Audio();
+  ttsAudio.preload = 'auto';
+  var exportHasAudio = false;   // file xuất ra có tiếng hay không
+  var ttsFailed = false;
+
+  function ttsUrl(text){
+    return 'https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=' + encodeURIComponent(text);
+  }
+
+  /* ---------- Nút bấm ---------- */
+  function stopAll(){
+    if('speechSynthesis' in window) speechSynthesis.cancel();
+    try { ttsAudio.pause(); } catch(e){}
+    ttsAudio.oncanplay = ttsAudio.onended = ttsAudio.onerror = null;
+    speaking = false;
+    btnPlay.disabled = false; btnStop.disabled = true;
+  }
+
+  btnPlay.addEventListener('click', function(){
+    stopAll();
+    var list = chunkText(scriptEl.value);
+    if(!list.length){ setStatus('Hãy nhập kịch bản trước nhé.'); return; }
+    btnPlay.disabled = true; btnStop.disabled = false;
+    speakChunks(list, function(){ stopAll(); setStatus('Xong! Nhấn “Xuất video WebM” để tải file.'); });
+  });
+
+  btnStop.addEventListener('click', function(){
+    stopAll();
+    if(recording) finishRecording();
+    setStatus('Đã dừng.');
+  });
+
+  function pickMime(){
+    var cands = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
+    for(var i = 0; i < cands.length; i++){
+      if(window.MediaRecorder && MediaRecorder.isTypeSupported(cands[i])) return cands[i];
+    }
+    return '';
+  }
+
+  btnExport.addEventListener('click', function(){
+    if(recording){ finishRecording(); return; }
+    var list = chunkText(scriptEl.value);
+    if(!list.length){ setStatus('Hãy nhập kịch bản trước nhé.'); return; }
+    recMime = pickMime();
+    if(!recMime){ setStatus('Trình duyệt này không hỗ trợ ghi video. Hãy thử Chrome hoặc Edge.'); return; }
+    stopAll();
+    recChunks = [];
+    recorder = null;
+    exportHasAudio = false;
+    ttsFailed = false;
+    recording = true;
+    btnExport.textContent = '⏹ Dừng & lưu video';
+    btnPlay.disabled = true; btnStop.disabled = false;
+    chunks = list; chunkIndex = 0; speaking = true; updateProgress();
+    requestTabAudioThenExport(list);
+
+    /* Xuất video có tiếng bằng cách thu âm thanh của tab (không cần API key).
+       Lúc bấm xuất, trình duyệt hiện hộp xin quyền "chia sẻ tab"; mọi âm thanh
+       phát ra trong tab (giọng TTS online) được thu lại và ghép chung với track
+       hình của canvas. Nếu bị từ chối/quyền không khả dụng, rẽ sang nhánh cũ
+       (trung thực, báo không tiếng). (Thêm 2026-10-11) */
+    function requestTabAudioThenExport(list){
+      if(!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia)){
+        setStatus('Đang tải giọng đọc online…');
+        playChunkTts(0);
+        return;
+      }
+      setStatus('Sắp hiện hộp xin quyền: hãy chọn đúng TAB này và bật “Chia sẻ âm thanh của tab” nhé…');
+      navigator.mediaDevices.getDisplayMedia({ audio: true, video: false }).then(
+        function(s){ gotTabStream(s, list); },
+        function(){
+          // Vài bản Chrome chỉ cho thu tiếng tab khi kèm video -> thử lại rồi bỏ track hình
+          navigator.mediaDevices.getDisplayMedia({ video: true, audio: true }).then(
+            function(s){ gotTabStream(s, list); },
+            function(){ setStatus('Đang tải giọng đọc online…'); playChunkTts(0); }
+          );
+        }
+      );
+    }
+
+    function gotTabStream(stream, list){
+      tabStream = stream;
+      var aTrack = stream.getAudioTracks()[0] || null;
+      stream.getVideoTracks().forEach(function(t){ try{ t.stop(); }catch(e){} });
+      if(!aTrack || aTrack.muted){
+        stopTabStream();
+        setStatus('Đang tải giọng đọc online…');
+        playChunkTts(0);
+        return;
+      }
+      aTrack.onended = function(){
+        if(recording){ setStatus('Bạn đã tắt chia sẻ âm thanh — dừng xuất video.'); finishRecording(); }
+      };
+      var tracks = canvas.captureStream(30).getVideoTracks().slice();
+      tracks.push(aTrack);
+      try {
+        recorder = new MediaRecorder(new MediaStream(tracks),
+          { mimeType: recMime, videoBitsPerSecond: 5000000, audioBitsPerSecond: 128000 });
+      } catch(e){ stopTabStream(); setStatus('Không khởi tạo được trình ghi: ' + e.message); abortExport(); return; }
+      recorder.ondataavailable = function(e){ if(e.data && e.data.size) recChunks.push(e.data); };
+      recorder.onstop = saveRecording;
+      recorder.start(250);
+      exportHasAudio = true;
+      setStatus('Đang ghi hình + giọng đọc… đoạn 1/' + list.length);
+      playChunkTts(0);
+    }
+
+    // Đọc nối tiếp từng đoạn bằng giọng TTS online; đoạn đầu tiên dùng để gắn track tiếng vào trình ghi
+    function playChunkTts(idx){
+      if(!recording) return;
+      chunkIndex = idx; updateProgress();
+      setStatus('Đang ghi hình + giọng đọc… đoạn ' + (idx + 1) + '/' + list.length);
+      ttsAudio.src = ttsUrl(list[idx]);
+      ttsAudio.oncanplay = function(){
+        ttsAudio.oncanplay = null;
+        if(idx === 0 && !recorder){
+          var audioTrack = null;
+          try { audioTrack = (ttsAudio.captureStream().getAudioTracks()[0]) || null; } catch(e){ audioTrack = null; }
+          // Track khác origin không có CORS sẽ bị trình duyệt muted -> ghi ra file im lặng.
+          // Coi như tải giọng thất bại để rẽ sang nhánh trung thực (báo không có tiếng).
+          if(audioTrack && audioTrack.muted){ audioTrack = null; }
+          exportHasAudio = !!audioTrack;
+          var tracks = canvas.captureStream(30).getVideoTracks().slice();
+          if(audioTrack) tracks.push(audioTrack);
+          try {
+            recorder = new MediaRecorder(new MediaStream(tracks),
+              { mimeType: recMime, videoBitsPerSecond: 5000000, audioBitsPerSecond: 128000 });
+          } catch(e){ setStatus('Không khởi tạo được trình ghi: ' + e.message); abortExport(); return; }
+          recorder.ondataavailable = function(e){ if(e.data && e.data.size) recChunks.push(e.data); };
+          recorder.onstop = saveRecording;
+          recorder.start(250);
+        }
+        var pr = ttsAudio.play();
+        if(pr && pr.catch) pr.catch(function(){ fallbackSilent(); });
+      };
+      ttsAudio.onended = function(){
+        if(!recording) return;
+        if(idx + 1 < list.length) playChunkTts(idx + 1);
+        else setTimeout(finishRecording, 600);
+      };
+      ttsAudio.onerror = function(){ fallbackSilent(); };
+      try { ttsAudio.load(); } catch(e){ fallbackSilent(); }
+    }
+
+    // Rớt mạng / TTS lỗi: quay về cách cũ (video không tiếng, đọc bằng giọng hệ thống)
+    function fallbackSilent(){
+      if(ttsFailed || !recording) return;
+      ttsFailed = true;
+      try { ttsAudio.pause(); } catch(e){}
+      ttsAudio.oncanplay = ttsAudio.onended = ttsAudio.onerror = null;
+      exportHasAudio = false;
+      if(tabStream){
+        // Đang thu tiếng tab: giọng hệ thống (speechSynthesis) không chắc được
+        // thu vào cùng tab, nên dừng xuất để không ra file im lặng khó hiểu.
+        stopTabStream();
+        abortExport();
+        setStatus('Không tải được giọng đọc online — kiểm tra mạng rồi bấm xuất lại nhé.');
+        return;
+      }
+      if(!recorder){
+        try {
+          recorder = new MediaRecorder(canvas.captureStream(30), { mimeType: recMime, videoBitsPerSecond: 5000000 });
+        } catch(e){ setStatus('Không khởi tạo được trình ghi: ' + e.message); abortExport(); return; }
+        recorder.ondataavailable = function(e){ if(e.data && e.data.size) recChunks.push(e.data); };
+        recorder.onstop = saveRecording;
+        recorder.start(250);
+      }
+      setStatus('Không tải được giọng online — tiếp tục xuất video không tiếng…');
+      speakChunks(chunks.slice(chunkIndex), function(){ setTimeout(finishRecording, 700); });
+    }
+
+    function abortExport(){
+      recording = false; recorder = null;
+      stopTabStream();
+      btnExport.textContent = '⬇ Xuất video WebM';
+      stopAll();
+      setStatus('Xuất video thất bại, hãy thử lại nhé.');
+    }
+  });
+
+  function finishRecording(){
+    if(!recording) return;
+    recording = false;
+    stopAll();
+    if(recorder){ try { recorder.stop(); } catch(e){} }
+    stopTabStream();
+    btnExport.textContent = '⬇ Xuất video WebM';
+    setStatus(recorder ? 'Đang xử lý file…' : 'Đã dừng.');
+  }
+
+  function stopTabStream(){
+    if(tabStream){ try{ tabStream.getTracks().forEach(function(t){ t.stop(); }); }catch(e){} tabStream = null; }
+  }
+
+  function saveRecording(){
+    var blob = new Blob(recChunks, { type: recMime || 'video/webm' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'ai-video-demo.webm';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 4000);
+    btnPlay.disabled = false; btnStop.disabled = true;
+    setStatus('Đã tải video (' + (blob.size/1024).toFixed(0) + ' KB). ' +
+      (exportHasAudio ? 'Video đã có tiếng 🔊' : 'Lưu ý: file này chưa có tiếng (không tải được giọng online) — xem README.md để gắn giọng AI thật.'));
+    progressBar.style.width = '0%';
+  }
+})();
+</script>
+</body>
+</html>
