@@ -154,6 +154,7 @@ Chi tiết: `pipeline/ARCHITECTURE.md`.
 - [x] Đóng gói staging runbook + script migration state + test contract Postiz an toàn
   → `pipeline/STAGING_RUNBOOK.md`, `pipeline/scripts/`
 - [x] Thêm dedup theo source/prompt, candidate time-window, retry/dead-letter và audit log vào workflow thực tế
+- [x] Thêm content-pack.v1 schema, lưu hashtags, migration tương thích và backup/restore state scripts
 
 ### 7.4 Cấu hình Postiz + kết nối Fanpage
 

@@ -25,7 +25,7 @@ WITH candidates AS (
 )
 SELECT c.id AS publishing_job_id, c.draft_id, c.destination, c.idempotency_key,
        c.scheduled_at, c.attempts, cd.title, cd.body, cd.claims_json,
-       cd.uncertainties_json, cd.safety_note, cd.source_url, cd.approved_at,
+       cd.uncertainties_json, cd.hashtags_json, cd.safety_note, cd.source_url, cd.approved_at,
        cd.reviewer, cd.status AS draft_status
 FROM claimed c JOIN content_drafts cd ON cd.id = c.draft_id;
 

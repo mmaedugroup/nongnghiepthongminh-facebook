@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS content_drafts (
   body TEXT NOT NULL,
   claims_json JSONB NOT NULL DEFAULT '[]'::jsonb,
   uncertainties_json JSONB NOT NULL DEFAULT '[]'::jsonb,
+  hashtags_json JSONB NOT NULL DEFAULT '[]'::jsonb,
   safety_note TEXT NOT NULL,
   source_url TEXT NOT NULL,
   model_name TEXT,
@@ -56,6 +57,13 @@ CREATE TABLE IF NOT EXISTS publishing_jobs (
   status TEXT NOT NULL DEFAULT 'queued'
     CHECK (status IN ('queued', 'publishing', 'scheduled', 'published', 'failed'))
 );
+
+-- Compatibility migrations for an already initialized state database.
+ALTER TABLE content_drafts ADD COLUMN IF NOT EXISTS hashtags_json JSONB NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE publishing_jobs ADD COLUMN IF NOT EXISTS claimed_at TIMESTAMPTZ;
+ALTER TABLE publishing_jobs DROP CONSTRAINT IF EXISTS publishing_jobs_status_check;
+ALTER TABLE publishing_jobs ADD CONSTRAINT publishing_jobs_status_check
+  CHECK (status IN ('queued', 'publishing', 'scheduled', 'published', 'failed'));
 
 CREATE TABLE IF NOT EXISTS audit_events (
   id BIGSERIAL PRIMARY KEY,

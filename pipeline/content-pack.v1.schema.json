@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://nongnghiepthongminh-facebook.example/schemas/content-pack.v1.schema.json",
+  "title": "NNTT Content Pack v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "body",
+    "pillar",
+    "claims",
+    "uncertainties",
+    "safety_note",
+    "hashtags",
+    "source_url"
+  ],
+  "properties": {
+    "title": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "body": { "type": "string", "minLength": 1, "maxLength": 10000 },
+    "pillar": {
+      "type": "string",
+      "enum": ["mo_hinh_thuc_te", "kien_thuc_khoa_hoc", "meo_ap_dung_ngay"]
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "source"],
+        "properties": {
+          "text": { "type": "string", "minLength": 1 },
+          "source": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "uncertainties": { "type": "array", "items": { "type": "string" } },
+    "safety_note": { "type": "string", "minLength": 1 },
+    "hashtags": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": { "type": "string", "pattern": "^#[^\\s#]+$" }
+    },
+    "source_url": { "type": "string", "format": "uri" }
+  }
+}

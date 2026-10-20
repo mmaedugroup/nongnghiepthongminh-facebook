@@ -80,3 +80,25 @@ Response phải được lưu ngoài Git sau khi xóa Authorization/token. Xác 
 - [ ] Staging create request trả 2xx với quote, emoji và newline.
 - [ ] Không có token trong log, fixture hoặc commit.
 - [ ] Chưa bật lịch production nếu chưa có `approved_at` và người duyệt thật.
+
+## 6. Backup/restore state
+
+Backup state database bằng custom-format dump; file backup được tạo với quyền
+`0600` và không được commit vào Git:
+
+```bash
+export STATE_DATABASE_URL='postgresql://media_state:***@postgres-state:5432/media_state'
+./pipeline/scripts/backup-state.sh backups/media-state-test.dump
+```
+
+Restore là thao tác ghi đè, luôn dùng database staging rỗng hoặc bản sao tạm
+và phải đặt xác nhận rõ ràng:
+
+```bash
+export BACKUP_FILE=backups/media-state-test.dump
+export CONFIRM_STATE_RESTORE=I_UNDERSTAND_STATE_RESTORE
+./pipeline/scripts/restore-state.sh
+```
+
+Exit criterion trước pilot: tạo một draft fixture, backup, restore vào database
+tạm, rồi kiểm tra lại `content_drafts`, `publishing_jobs` và `audit_events`.

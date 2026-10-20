@@ -6,6 +6,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 SCHEMA_FILE="$ROOT_DIR/pipeline/state-schema.sql"
 
 psql "$STATE_DATABASE_URL" -v ON_ERROR_STOP=1 -f "$SCHEMA_FILE" >/dev/null
+# A second apply simulates an upgrade of an already initialized staging DB.
+psql "$STATE_DATABASE_URL" -v ON_ERROR_STOP=1 -f "$SCHEMA_FILE" >/dev/null
 
 psql "$STATE_DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
 BEGIN;
@@ -15,9 +17,9 @@ VALUES ('fixture', 'fixture-guid', 'https://fixture.invalid/item-1', md5('https:
         'Fixture source', 'Fixture excerpt', md5('Fixture excerpt'), 'eligible');
 
 INSERT INTO content_drafts(source_item_id, pillar, title, body, claims_json, uncertainties_json,
-                           safety_note, source_url, model_name, prompt_version, status)
+                           safety_note, source_url, hashtags_json, model_name, prompt_version, status)
 SELECT id, 'kien_thuc_khoa_hoc', 'Fixture draft', 'Body', '[]'::jsonb, '[]'::jsonb,
-       'Review required', 'https://fixture.invalid/item-1', 'fixture', 'content-pack.v1', 'needs_review'
+       'Review required', 'https://fixture.invalid/item-1', '["#fixture"]'::jsonb, 'fixture', 'content-pack.v1', 'needs_review'
 FROM source_items WHERE guid = 'fixture-guid';
 
 -- Approval must atomically create exactly one queued publishing job.
@@ -37,6 +39,7 @@ BEGIN
   SELECT count(*)::integer INTO job_count FROM publishing_jobs WHERE idempotency_key = 'draft:https://fixture.invalid/item-1';
   IF job_count <> 1 THEN RAISE EXCEPTION 'expected one idempotent job, got %', job_count; END IF;
   SELECT status INTO job_status FROM publishing_jobs WHERE idempotency_key = 'draft:https://fixture.invalid/item-1';
+  IF NOT EXISTS (SELECT 1 FROM content_drafts WHERE source_url = 'https://fixture.invalid/item-1' AND hashtags_json = '["#fixture"]'::jsonb) THEN RAISE EXCEPTION 'hashtags were not persisted'; END IF;
   IF job_status <> 'queued' THEN RAISE EXCEPTION 'job status is %', job_status; END IF;
 END $$;
 

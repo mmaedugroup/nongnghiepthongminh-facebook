@@ -23,6 +23,7 @@ jobs:
         run: |
           python pipeline/scripts/validate-pipeline-contract.py
           python pipeline/scripts/test-retry-policy.py
+          python pipeline/scripts/test-content-pack.py
 
       - name: Validate shell scripts
         run: bash -n pipeline/scripts/*.sh
